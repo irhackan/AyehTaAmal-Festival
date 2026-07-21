@@ -41,8 +41,13 @@ class ChallengesViewModel @Inject constructor(
     private val repo: ContentRepository,
     private val prefs: UserPreferencesRepository
 ) : ViewModel() {
+
     val challenges = repo.observeChallenges()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
     fun completeDay() {
         viewModelScope.launch {
@@ -58,19 +63,50 @@ fun ChallengesScreen(
     viewModel: ChallengesViewModel = hiltViewModel()
 ) {
     val list by viewModel.challenges.collectAsStateWithLifecycle()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item { SectionTitle("چالش‌های عملی", "تغییر رفتار در چند روز") }
-        items(list, key = { it.id }) { item ->
-            SoftCard(modifier = Modifier.clickable { onOpenChallenge(item.id) }) {
-                Text(item.title, style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(6.dp))
-                Text(item.instructions, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
-                Spacer(Modifier.height(6.dp))
-                Text("${item.durationDays} روز")
+        item {
+            SectionTitle(
+                title = "چالش‌های عملی",
+                subtitle = "تغییر رفتار در چند روز"
+            )
+        }
+
+        items(
+            items = list,
+            key = { it.id }
+        ) { challengeItem ->
+            SoftCard(
+                modifier = Modifier.clickable {
+                    onOpenChallenge(challengeItem.id)
+                }
+            ) {
+                Text(
+                    text = challengeItem.title,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(
+                    modifier = Modifier.height(6.dp)
+                )
+
+                Text(
+                    text = challengeItem.instructions,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3
+                )
+
+                Spacer(
+                    modifier = Modifier.height(6.dp)
+                )
+
+                Text(
+                    text = "${challengeItem.durationDays} روز"
+                )
             }
         }
     }
@@ -82,25 +118,60 @@ fun ChallengeDetailScreen(
     onOpenAyah: (Long) -> Unit,
     onCompleteDay: () -> Unit
 ) {
-    var day by remember { mutableIntStateOf(1) }
+    var day by remember {
+        mutableIntStateOf(1)
+    }
+
     val total = challenge?.durationDays ?: 7
-    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionTitle(challenge?.title ?: "چالش", "روز $day از $total")
+
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SectionTitle(
+            title = challenge?.title ?: "چالش",
+            subtitle = "روز $day از $total"
+        )
+
         SoftCard {
-            Text(challenge?.instructions.orEmpty())
-            Spacer(Modifier.height(10.dp))
-            ProgressRow("پیشرفت", day.toFloat() / total)
-            Spacer(Modifier.height(10.dp))
-            PrimaryActionButton("ثبت انجام امروز") {
-                if (day < total) day++
-                onCompleteDay()
-            }
-            Spacer(Modifier.height(8.dp))
+            Text(
+                text = challenge?.instructions.orEmpty()
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            ProgressRow(
+                label = "پیشرفت",
+                progress = day.toFloat() / total.toFloat()
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            PrimaryActionButton(
+                text = "ثبت انجام امروز",
+                onClick = {
+                    if (day < total) {
+                        day++
+                    }
+                    onCompleteDay()
+                }
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
             if (challenge != null) {
                 Text(
-                    "مشاهده آیه محوری",
+                    text = "مشاهده آیه محوری",
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { onOpenAyah(challenge.ayahId) }
+                    modifier = Modifier.clickable {
+                        onOpenAyah(challenge.ayahId)
+                    }
                 )
             }
         }
