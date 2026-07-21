@@ -318,17 +318,17 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     StatChip(
-                        label = "آیات",
+                        title = "آیات",
                         value = "${snap.stats.ayahsRead}"
                     )
 
                     StatChip(
-                        label = "تمرین",
+                        title = "تمرین",
                         value = "${snap.stats.practicesDone}"
                     )
 
                     StatChip(
-                        label = "آزمون",
+                        title = "آزمون",
                         value = "${snap.stats.quizzesTaken}"
                     )
                 }
@@ -342,17 +342,17 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     StatChip(
-                        label = "امتیاز",
+                        title = "امتیاز",
                         value = "${snap.stats.avgScore}"
                     )
 
                     StatChip(
-                        label = "یادداشت",
+                        title = "یادداشت",
                         value = "${snap.stats.notesCount}"
                     )
 
                     StatChip(
-                        label = "استمرار",
+                        title = "استمرار",
                         value = "${snap.stats.streak}"
                     )
                 }
