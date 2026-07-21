@@ -23,8 +23,11 @@ import ir.ayeh.taamal.ui.components.SectionTitle
 import ir.ayeh.taamal.ui.components.SoftCard
 
 @Composable
-fun AboutScreen(onPrivacy: () -> Unit = {}) {
+fun AboutScreen(
+    onPrivacy: () -> Unit = {}
+) {
     val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,51 +35,117 @@ fun AboutScreen(onPrivacy: () -> Unit = {}) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SectionTitle("درباره ما", "آیه تا عمل")
+        SectionTitle(
+            "درباره ما",
+            "آیه تا عمل"
+        )
+
         SoftCard {
             Text(
-                "اپلیکیشن «آیه تا عمل» با هدف تقویت ارتباط کاربردی کاربران با قرآن کریم طراحی شده است. " +
+                text = "اپلیکیشن «آیه تا عمل» با هدف تقویت ارتباط کاربردی کاربران با قرآن کریم طراحی شده است. " +
                     "این برنامه تلاش می‌کند مفاهیم قرآن را از سطح مطالعه و آشنایی نظری به سطح تدبر، " +
                     "تصمیم‌گیری و تمرین‌های رفتاری روزانه منتقل کند."
             )
-            Spacer(Modifier.height(10.dp))
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
             Text(
-                "کاربران می‌توانند آیات قرآن را همراه با ترجمه‌های معتبر، نکات تفسیری، کاربردهای امروزی، " +
+                text = "کاربران می‌توانند آیات قرآن را همراه با ترجمه‌های معتبر، نکات تفسیری، کاربردهای امروزی، " +
                     "تمرین‌های عملی، آزمون‌ها و مسیرهای آموزشی مطالعه کنند و روند پیشرفت خود را مشاهده نمایند."
             )
         }
+
         SoftCard {
-            Text("اطلاعات اثر", fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "اطلاعات اثر",
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
             InfoLine("نام برنامه", "آیه تا عمل")
             InfoLine("عنوان اثر", "اپلیکیشن تدبر، تمرین و سبک زندگی قرآنی")
             InfoLine("شعار", "از تلاوت تا تغییر رفتار")
             InfoLine("نسخه", "۱.۰")
             InfoLine("سال تولید", "۱۴۰۵")
         }
+
         SoftCard {
-            Text("اطلاعات سازنده", fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "اطلاعات سازنده",
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
             InfoLine("طراح و برنامه‌نویس", "کاظم دهناد")
             InfoLine("شماره تماس", "09359654067")
             InfoLine("ایمیل", "irhackan@gmail.com")
-            Spacer(Modifier.height(12.dp))
-            PrimaryActionButton("تماس تلفنی") {
-                context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:09359654067")))
-            }
-            Spacer(Modifier.height(8.dp))
-            TextButton(onClick = onPrivacy) { Text("سیاست حریم خصوصی") }
-            Spacer(Modifier.height(4.dp))
-            TextButton(onClick = {
-                context.startActivity(
-                    Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:irhackan@gmail.com"))
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
+            PrimaryActionButton(
+                "تماس تلفنی",
+                onClick = {
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_DIAL,
+                            Uri.parse("tel:09359654067")
+                        )
+                    )
+                }
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            TextButton(
+                onClick = onPrivacy
+            ) {
+                Text(
+                    text = "سیاست حریم خصوصی"
                 )
-            }) { Text("ارسال ایمیل") }
+            }
+
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
+
+            TextButton(
+                onClick = {
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_SENDTO,
+                            Uri.parse("mailto:irhackan@gmail.com")
+                        )
+                    )
+                }
+            ) {
+                Text(
+                    text = "ارسال ایمیل"
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun InfoLine(label: String, value: String) {
-    Text("$label: $value", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = 2.dp))
+private fun InfoLine(
+    label: String,
+    value: String
+) {
+    Text(
+        text = "$label: $value",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(vertical = 2.dp)
+    )
 }
