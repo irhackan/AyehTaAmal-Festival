@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -61,110 +62,299 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState())
     ) {
         GradientHeader {
-            Text("سلام ${settings.userName}", style = MaterialTheme.typography.headlineMedium)
             Text(
-                "امروز فرصتی تازه برای تدبر و عمل است",
+                text = "سلام ${settings.userName}",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Text(
+                text = "امروز فرصتی تازه برای تدبر و عمل است",
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.height(8.dp))
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(JalaliDate.todayFa(), style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    "${settings.streakDays} روز پیوسته",
+                    text = JalaliDate.todayFa(),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Text(
+                    text = "${settings.streakDays} روز پیوسته",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
         }
 
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
             SoftCard {
-                SectionTitle("آیه روز", snap.ayah?.let { "سوره ${it.surahNumber} آیه ${it.ayahNumber}" })
+                SectionTitle(
+                    title = "آیه روز",
+                    subtitle = snap.ayah?.let {
+                        "سوره ${it.surahNumber} آیه ${it.ayahNumber}"
+                    }
+                )
+
                 if (snap.ayah != null) {
-                    ArabicAyahText(snap.ayah!!.arabicText)
-                    Spacer(Modifier.height(10.dp))
-                    Text(snap.translation, style = MaterialTheme.typography.bodyLarge)
-                    Spacer(Modifier.height(8.dp))
-                    TextButton(onClick = { onOpenAyah(snap.ayah!!.id) }) {
-                        Text("مشاهده جزئیات")
+                    ArabicAyahText(
+                        text = snap.ayah!!.arabicText
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(10.dp)
+                    )
+
+                    Text(
+                        text = snap.translation,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    TextButton(
+                        onClick = {
+                            onOpenAyah(snap.ayah!!.id)
+                        }
+                    ) {
+                        Text(
+                            text = "مشاهده جزئیات"
+                        )
                     }
                 } else {
-                    Text("در حال آماده‌سازی محتوا…")
+                    Text(
+                        text = "در حال آماده‌سازی محتوا…"
+                    )
                 }
             }
 
             SoftCard {
-                SectionTitle("پیام روز")
+                SectionTitle(
+                    title = "پیام روز"
+                )
+
                 Text(
-                    snap.message.ifBlank { "هر آیه می‌تواند امروز یک رفتار بهتر بسازد." },
+                    text = snap.message.ifBlank {
+                        "هر آیه می‌تواند امروز یک رفتار بهتر بسازد."
+                    },
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
 
             SoftCard {
-                SectionTitle("تمرین امروز")
+                SectionTitle(
+                    title = "تمرین امروز"
+                )
+
                 val practice = snap.practice
+
                 if (practice != null) {
-                    Text(practice.title, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(4.dp))
-                    Text(practice.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(6.dp))
-                    Text("${practice.durationMinutes} دقیقه · ${practice.difficulty}")
-                    Spacer(Modifier.height(10.dp))
-                    PrimaryActionButton("ثبت انجام تمرین", onClick = { viewModel.markPracticeDone() })
+                    Text(
+                        text = practice.title,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(4.dp)
+                    )
+
+                    Text(
+                        text = practice.description,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(6.dp)
+                    )
+
+                    Text(
+                        text = "${practice.durationMinutes} دقیقه · ${practice.difficulty}"
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(10.dp)
+                    )
+
+                    PrimaryActionButton(
+                        text = "ثبت انجام تمرین",
+                        onClick = {
+                            viewModel.markPracticeDone()
+                        }
+                    )
                 } else {
-                    Text("تمرینی برای امروز یافت نشد.")
+                    Text(
+                        text = "تمرینی برای امروز یافت نشد."
+                    )
                 }
             }
 
             snap.path?.let { path ->
-                SoftCard(modifier = Modifier.clickable { onOpenPath(path.id) }) {
-                    SectionTitle("مسیر فعال", path.title)
-                    ProgressRow("پیشرفت", path.progress)
-                    Spacer(Modifier.height(8.dp))
-                    Text("${path.durationDays} روز · سطح ${path.level}")
+                SoftCard(
+                    modifier = Modifier.clickable {
+                        onOpenPath(path.id)
+                    }
+                ) {
+                    SectionTitle(
+                        title = "مسیر فعال",
+                        subtitle = path.title
+                    )
+
+                    ProgressRow(
+                        label = "پیشرفت",
+                        progress = path.progress
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    Text(
+                        text = "${path.durationDays} روز · سطح ${path.level}"
+                    )
                 }
             }
 
-            snap.challenge?.let { ch ->
-                SoftCard(modifier = Modifier.clickable { onOpenChallenge(ch.id) }) {
-                    SectionTitle("چالش فعال", ch.title)
-                    Text(ch.instructions, maxLines = 3, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(6.dp))
-                    Text("${ch.durationDays} روز")
+            snap.challenge?.let { challenge ->
+                SoftCard(
+                    modifier = Modifier.clickable {
+                        onOpenChallenge(challenge.id)
+                    }
+                ) {
+                    SectionTitle(
+                        title = "چالش فعال",
+                        subtitle = challenge.title
+                    )
+
+                    Text(
+                        text = challenge.instructions,
+                        maxLines = 3,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(6.dp)
+                    )
+
+                    Text(
+                        text = "${challenge.durationDays} روز"
+                    )
                 }
             }
 
             SoftCard {
-                SectionTitle("دسترسی سریع")
-                Row(Modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    QuickItem("قرآن", Icons.Outlined.MenuBook, onOpenQuran)
-                    QuickItem("جست‌وجو", Icons.Outlined.Search, onOpenSearch)
-                    QuickItem("آزمون", Icons.Outlined.Quiz, onOpenQuiz)
+                SectionTitle(
+                    title = "دسترسی سریع"
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    QuickItem(
+                        label = "قرآن",
+                        icon = Icons.Outlined.MenuBook,
+                        onClick = onOpenQuran
+                    )
+
+                    QuickItem(
+                        label = "جست‌وجو",
+                        icon = Icons.Outlined.Search,
+                        onClick = onOpenSearch
+                    )
+
+                    QuickItem(
+                        label = "آزمون",
+                        icon = Icons.Outlined.Quiz,
+                        onClick = onOpenQuiz
+                    )
                 }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    QuickItem("دفتر", Icons.Outlined.BookmarkBorder, onOpenJournal)
-                    QuickItem("موقعیت", Icons.Outlined.Spa, onOpenSituations)
-                    QuickItem("بیشتر", Icons.Outlined.SelfImprovement, onOpenMore)
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    QuickItem(
+                        label = "دفتر",
+                        icon = Icons.Outlined.BookmarkBorder,
+                        onClick = onOpenJournal
+                    )
+
+                    QuickItem(
+                        label = "موقعیت",
+                        icon = Icons.Outlined.Spa,
+                        onClick = onOpenSituations
+                    )
+
+                    QuickItem(
+                        label = "بیشتر",
+                        icon = Icons.Outlined.SelfImprovement,
+                        onClick = onOpenMore
+                    )
                 }
             }
 
             SoftCard {
-                SectionTitle("آمار هفتگی")
-                Row(Modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    StatChip("آیات", "${snap.stats.ayahsRead}")
-                    StatChip("تمرین", "${snap.stats.practicesDone}")
-                    StatChip("آزمون", "${snap.stats.quizzesTaken}")
+                SectionTitle(
+                    title = "آمار هفتگی"
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    StatChip(
+                        label = "آیات",
+                        value = "${snap.stats.ayahsRead}"
+                    )
+
+                    StatChip(
+                        label = "تمرین",
+                        value = "${snap.stats.practicesDone}"
+                    )
+
+                    StatChip(
+                        label = "آزمون",
+                        value = "${snap.stats.quizzesTaken}"
+                    )
                 }
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    StatChip("امتیاز", "${snap.stats.avgScore}")
-                    StatChip("یادداشت", "${snap.stats.notesCount}")
-                    StatChip("استمرار", "${snap.stats.streak}")
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    StatChip(
+                        label = "امتیاز",
+                        value = "${snap.stats.avgScore}"
+                    )
+
+                    StatChip(
+                        label = "یادداشت",
+                        value = "${snap.stats.notesCount}"
+                    )
+
+                    StatChip(
+                        label = "استمرار",
+                        value = "${snap.stats.streak}"
+                    )
                 }
             }
         }
@@ -172,15 +362,30 @@ fun HomeScreen(
 }
 
 @Composable
-private fun QuickItem(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+private fun QuickItem(
+    label: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(onClick = onClick)
             .padding(8.dp)
     ) {
-        Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.height(4.dp))
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(
+            modifier = Modifier.height(4.dp)
+        )
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge
+        )
     }
 }
