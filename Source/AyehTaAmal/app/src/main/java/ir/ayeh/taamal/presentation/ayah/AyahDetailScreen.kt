@@ -13,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -43,20 +42,37 @@ class AyahDetailViewModel @Inject constructor(
     private val repo: ContentRepository,
     private val prefs: UserPreferencesRepository
 ) : ViewModel() {
-    val settings = prefs.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserSettings())
+
+    val settings = prefs.settings.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UserSettings()
+    )
+
     var detail by mutableStateOf<AyahDetailContent?>(null)
         private set
 
-    fun load(ayahId: Long, translatorId: Long) {
+    fun load(
+        ayahId: Long,
+        translatorId: Long
+    ) {
         viewModelScope.launch {
-            detail = repo.getAyahDetail(ayahId, translatorId)
+            detail = repo.getAyahDetail(
+                ayahId = ayahId,
+                translatorId = translatorId
+            )
+
             repo.bumpProgress("ayahs_read")
             prefs.addPoints(5)
         }
     }
 
     fun setTranslator(id: Long) {
-        viewModelScope.launch { prefs.update { it.copy(translatorId = id) } }
+        viewModelScope.launch {
+            prefs.update {
+                it.copy(translatorId = id)
+            }
+        }
     }
 
     fun completePractice() {
@@ -73,13 +89,23 @@ fun AyahDetailScreen(
     viewModel: AyahDetailViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
-    LaunchedEffect(ayahId, settings.translatorId) {
-        viewModel.load(ayahId, settings.translatorId)
+
+    LaunchedEffect(
+        ayahId,
+        settings.translatorId
+    ) {
+        viewModel.load(
+            ayahId = ayahId,
+            translatorId = settings.translatorId
+        )
     }
+
     val detail = viewModel.detail
 
     if (detail == null) {
-        EmptyState("آیه یافت نشد یا هنوز بارگذاری نشده است.")
+        EmptyState(
+            message = "آیه یافت نشد یا هنوز بارگذاری نشده است."
+        )
         return
     }
 
@@ -91,89 +117,188 @@ fun AyahDetailScreen(
         item {
             SoftCard {
                 Text(
-                    "سوره ${detail.ayah.surahNumber} · آیه ${detail.ayah.ayahNumber} · جزء ${detail.ayah.juzNumber}",
+                    text = "سوره ${detail.ayah.surahNumber} · " +
+                        "آیه ${detail.ayah.ayahNumber} · " +
+                        "جزء ${detail.ayah.juzNumber}",
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(Modifier.height(10.dp))
-                ArabicAyahText(detail.ayah.arabicText)
+
+                Spacer(
+                    modifier = Modifier.height(10.dp)
+                )
+
+                ArabicAyahText(
+                    text = detail.ayah.arabicText
+                )
             }
         }
+
         item {
             SoftCard {
-                SectionTitle("ترجمه")
-                listOf(1L to "فولادوند", 2L to "مکارم", 3L to "قمشه‌ای").forEach { (id, name) ->
+                SectionTitle(
+                    title = "ترجمه"
+                )
+
+                listOf(
+                    1L to "فولادوند",
+                    2L to "مکارم",
+                    3L to "قمشه‌ای"
+                ).forEach { (id, name) ->
                     FilterChip(
                         selected = settings.translatorId == id,
-                        onClick = { viewModel.setTranslator(id) },
-                        label = { Text(name) },
-                        modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
+                        onClick = {
+                            viewModel.setTranslator(id)
+                        },
+                        label = {
+                            Text(text = name)
+                        },
+                        modifier = Modifier.padding(
+                            end = 4.dp,
+                            bottom = 4.dp
+                        )
                     )
                 }
-                Spacer(Modifier.height(8.dp))
-                val selected = detail.translations.find { it.translatorId == settings.translatorId }
-                    ?: detail.translations.firstOrNull()
-                Text(selected?.translationText.orEmpty(), style = MaterialTheme.typography.bodyLarge)
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                val selectedTranslation =
+                    detail.translations.find {
+                        it.translatorId == settings.translatorId
+                    } ?: detail.translations.firstOrNull()
+
+                Text(
+                    text = selectedTranslation?.translationText.orEmpty(),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
+
         if (detail.message.isNotBlank()) {
             item {
                 SoftCard {
-                    SectionTitle("پیام اصلی")
-                    Text(detail.message)
+                    SectionTitle(
+                        title = "پیام اصلی"
+                    )
+
+                    Text(
+                        text = detail.message
+                    )
                 }
             }
         }
+
         if (detail.tafsir.isNotBlank()) {
             item {
                 SoftCard {
-                    SectionTitle("تفسیر کوتاه", detail.tafsirSource)
-                    Text(detail.tafsir)
+                    SectionTitle(
+                        title = "تفسیر کوتاه",
+                        subtitle = detail.tafsirSource
+                    )
+
+                    Text(
+                        text = detail.tafsir
+                    )
                 }
             }
         }
+
         if (detail.vocabulary.isNotEmpty()) {
             item {
                 SoftCard {
-                    SectionTitle("واژگان مهم")
-                    detail.vocabulary.forEach { v ->
-                        Text("${v.arabic} (${v.root})", fontWeight = FontWeight.SemiBold)
-                        Text("${v.meaning} — ${v.note}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(6.dp))
+                    SectionTitle(
+                        title = "واژگان مهم"
+                    )
+
+                    detail.vocabulary.forEach { vocabulary ->
+                        Text(
+                            text = "${vocabulary.arabic} (${vocabulary.root})",
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Text(
+                            text = "${vocabulary.meaning} — ${vocabulary.note}",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(6.dp)
+                        )
                     }
                 }
             }
         }
+
         if (detail.applications.isNotEmpty()) {
             item {
                 SoftCard {
-                    SectionTitle("کاربرد امروزی")
-                    detail.applications.forEach { (k, v) ->
-                        Text(k, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-                        Text(v)
-                        Spacer(Modifier.height(6.dp))
+                    SectionTitle(
+                        title = "کاربرد امروزی"
+                    )
+
+                    detail.applications.forEach { (title, description) ->
+                        Text(
+                            text = title,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Text(
+                            text = description
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(6.dp)
+                        )
                     }
                 }
             }
         }
+
         detail.practices.forEach { practice ->
             item {
                 SoftCard {
-                    SectionTitle(practice.title, "${practice.durationMinutes} دقیقه · ${practice.difficulty}")
-                    Text(practice.description)
-                    Spacer(Modifier.height(8.dp))
-                    PrimaryActionButton("ثبت انجام تمرین") { viewModel.completePractice() }
+                    SectionTitle(
+                        title = practice.title,
+                        subtitle = "${practice.durationMinutes} دقیقه · ${practice.difficulty}"
+                    )
+
+                    Text(
+                        text = practice.description
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    PrimaryActionButton(
+                        text = "ثبت انجام تمرین",
+                        onClick = {
+                            viewModel.completePractice()
+                        }
+                    )
                 }
             }
         }
+
         item {
             SoftCard {
-                SectionTitle("پرسش‌های تدبری")
+                SectionTitle(
+                    title = "پرسش‌های تدبری"
+                )
+
                 listOf(
                     "پیام اصلی این آیه چیست؟",
                     "این آیه با کدام مسئله زندگی من ارتباط دارد؟",
                     "چه رفتاری باید اصلاح شود؟",
                     "امروز چه اقدامی انجام می‌دهم؟"
-                ).forEach { Text("• $it", modifier = Modifier) }
+                ).forEach { question ->
+                    Text(
+                        text = "• $question",
+                        modifier = Modifier
+                    )
+                }
             }
         }
     }
