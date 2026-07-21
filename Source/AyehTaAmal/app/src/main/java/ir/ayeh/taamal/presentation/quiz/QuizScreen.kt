@@ -40,11 +40,14 @@ class QuizViewModel @Inject constructor(
     private val repo: ContentRepository,
     private val prefs: UserPreferencesRepository
 ) : ViewModel() {
+
     var questions by mutableStateOf<List<QuizQuestion>>(emptyList())
         private set
 
     fun load() {
-        viewModelScope.launch { questions = repo.randomQuiz(8) }
+        viewModelScope.launch {
+            questions = repo.randomQuiz(8)
+        }
     }
 
     fun recordScore(correct: Int) {
@@ -56,14 +59,34 @@ class QuizViewModel @Inject constructor(
 }
 
 @Composable
-fun QuizScreen(viewModel: QuizViewModel = hiltViewModel()) {
-    LaunchedEffect(Unit) { viewModel.load() }
+fun QuizScreen(
+    viewModel: QuizViewModel = hiltViewModel()
+) {
+    LaunchedEffect(Unit) {
+        viewModel.load()
+    }
+
     val questions = viewModel.questions
-    var index by remember { mutableIntStateOf(0) }
-    var selected by remember { mutableIntStateOf(-1) }
-    var correctCount by remember { mutableIntStateOf(0) }
-    var finished by remember { mutableStateOf(false) }
-    var showAnswer by remember { mutableStateOf(false) }
+
+    var index by remember {
+        mutableIntStateOf(0)
+    }
+
+    var selected by remember {
+        mutableIntStateOf(-1)
+    }
+
+    var correctCount by remember {
+        mutableIntStateOf(0)
+    }
+
+    var finished by remember {
+        mutableStateOf(false)
+    }
+
+    var showAnswer by remember {
+        mutableStateOf(false)
+    }
 
     Column(
         modifier = Modifier
@@ -73,56 +96,115 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel()) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SectionTitle(
-            "آزمون روز",
-            if (questions.isEmpty()) "در حال بارگذاری…" else "سؤال ${index + 1} از ${questions.size}"
+            title = "آزمون روز",
+            subtitle = if (questions.isEmpty()) {
+                "در حال بارگذاری…"
+            } else {
+                "سؤال ${index + 1} از ${questions.size}"
+            }
         )
 
         if (finished) {
             SoftCard {
-                Text("پایان آزمون", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium)
-                Spacer(Modifier.height(8.dp))
-                Text("پاسخ صحیح: $correctCount از ${questions.size}")
-                Spacer(Modifier.height(12.dp))
-                PrimaryActionButton("آزمون دوباره") {
-                    index = 0
-                    selected = -1
-                    correctCount = 0
-                    finished = false
-                    showAnswer = false
-                    viewModel.load()
-                }
+                Text(
+                    text = "پایان آزمون",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Text(
+                    text = "پاسخ صحیح: $correctCount از ${questions.size}"
+                )
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+                PrimaryActionButton(
+                    text = "آزمون دوباره",
+                    onClick = {
+                        index = 0
+                        selected = -1
+                        correctCount = 0
+                        finished = false
+                        showAnswer = false
+                        viewModel.load()
+                    }
+                )
             }
+
             return@Column
         }
 
-        val q = questions.getOrNull(index) ?: return@Column
+        val question = questions.getOrNull(index) ?: return@Column
+
         SoftCard {
-            Text(q.question, style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(12.dp))
-            q.options.forEachIndexed { i, opt ->
+            Text(
+                text = question.question,
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
+            question.options.forEachIndexed { optionIndex, option ->
                 SoftCard(
                     modifier = Modifier
                         .padding(bottom = 8.dp)
-                        .clickable(enabled = !showAnswer) { selected = i }
+                        .clickable(
+                            enabled = !showAnswer,
+                            onClick = {
+                                selected = optionIndex
+                            }
+                        )
                 ) {
                     Text(
-                        text = opt,
+                        text = option,
                         modifier = Modifier.fillMaxWidth(),
                         color = when {
-                            !showAnswer && selected == i -> MaterialTheme.colorScheme.primary
-                            showAnswer && i == q.correctIndex -> MaterialTheme.colorScheme.primary
-                            showAnswer && selected == i && i != q.correctIndex -> MaterialTheme.colorScheme.error
-                            else -> MaterialTheme.colorScheme.onSurface
+                            !showAnswer && selected == optionIndex ->
+                                MaterialTheme.colorScheme.primary
+
+                            showAnswer && optionIndex == question.correctIndex ->
+                                MaterialTheme.colorScheme.primary
+
+                            showAnswer &&
+                                selected == optionIndex &&
+                                optionIndex != question.correctIndex ->
+                                MaterialTheme.colorScheme.error
+
+                            else ->
+                                MaterialTheme.colorScheme.onSurface
                         }
                     )
                 }
             }
+
             if (showAnswer) {
-                Spacer(Modifier.height(8.dp))
-                Text(q.explanation, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("منبع: ${q.source}", style = MaterialTheme.typography.bodySmall)
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Text(
+                    text = question.explanation,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = "منبع: ${question.source}",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
-            Spacer(Modifier.height(12.dp))
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
             PrimaryActionButton(
                 text = when {
                     !showAnswer -> "ثبت پاسخ"
@@ -133,7 +215,10 @@ fun QuizScreen(viewModel: QuizViewModel = hiltViewModel()) {
                 onClick = {
                     if (!showAnswer) {
                         showAnswer = true
-                        if (selected == q.correctIndex) correctCount++
+
+                        if (selected == question.correctIndex) {
+                            correctCount++
+                        }
                     } else if (index < questions.lastIndex) {
                         index++
                         selected = -1
