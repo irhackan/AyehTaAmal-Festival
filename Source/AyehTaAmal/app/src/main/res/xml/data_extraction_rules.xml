@@ -3,6 +3,5 @@
     <cloud-backup>
         <include domain="sharedpref" path="." />
         <include domain="database" path="." />
-        <exclude domain="root" path="sensitive/" />
     </cloud-backup>
 </data-extraction-rules>
