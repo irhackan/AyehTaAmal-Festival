@@ -39,11 +39,22 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(private val prefs: UserPreferencesRepository) : ViewModel() {
-    val settings = prefs.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserSettings())
+class ProfileViewModel @Inject constructor(
+    private val prefs: UserPreferencesRepository
+) : ViewModel() {
+
+    val settings = prefs.settings.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UserSettings()
+    )
 
     fun updateName(name: String) {
-        viewModelScope.launch { prefs.update { it.copy(userName = name) } }
+        viewModelScope.launch {
+            prefs.update {
+                it.copy(userName = name)
+            }
+        }
     }
 }
 
@@ -56,7 +67,11 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
-    var name by remember(settings.userName) { mutableStateOf(settings.userName) }
+
+    var name by remember(settings.userName) {
+        mutableStateOf(settings.userName)
+    }
+
     val badges = buildBadges(settings)
 
     Column(
@@ -65,45 +80,124 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState())
     ) {
         GradientHeader {
-            Text(settings.userName, style = MaterialTheme.typography.headlineMedium)
-            Text(audienceLabel(settings.audienceType), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                StatChip("امتیاز", "${settings.totalPoints}")
-                StatChip("استمرار", "${settings.streakDays}")
-                StatChip("سطح", levelFromPoints(settings.totalPoints))
+            Text(
+                text = settings.userName,
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Text(
+                text = audienceLabel(settings.audienceType),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                StatChip(
+                    title = "امتیاز",
+                    value = "${settings.totalPoints}"
+                )
+
+                StatChip(
+                    title = "استمرار",
+                    value = "${settings.streakDays}"
+                )
+
+                StatChip(
+                    title = "سطح",
+                    value = levelFromPoints(settings.totalPoints)
+                )
             }
         }
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             SoftCard {
-                SectionTitle("اطلاعات کاربری")
+                SectionTitle(
+                    title = "اطلاعات کاربری"
+                )
+
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it },
-                    label = { Text("نام") },
+                    onValueChange = {
+                        name = it
+                    },
+                    label = {
+                        Text(
+                            text = "نام"
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
-                PrimaryActionButton("ذخیره نام") { viewModel.updateName(name.ifBlank { "مهمان" }) }
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                PrimaryActionButton(
+                    text = "ذخیره نام",
+                    onClick = {
+                        viewModel.updateName(
+                            name.ifBlank {
+                                "مهمان"
+                            }
+                        )
+                    }
+                )
             }
+
             SoftCard {
-                SectionTitle("نشان‌ها")
-                badges.forEach { Text("• $it", modifier = Modifier.padding(vertical = 2.dp)) }
+                SectionTitle(
+                    title = "نشان‌ها"
+                )
+
+                badges.forEach { badge ->
+                    Text(
+                        text = "• $badge",
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
             }
+
             SoftCard {
-                MenuRow("تنظیمات", onSettings)
-                MenuRow("گزارش پیشرفت", onReports)
-                MenuRow("راهنمای برنامه", onHelp)
-                MenuRow("درباره ما", onAbout)
+                MenuRow(
+                    title = "تنظیمات",
+                    onClick = onSettings
+                )
+
+                MenuRow(
+                    title = "گزارش پیشرفت",
+                    onClick = onReports
+                )
+
+                MenuRow(
+                    title = "راهنمای برنامه",
+                    onClick = onHelp
+                )
+
+                MenuRow(
+                    title = "درباره ما",
+                    onClick = onAbout
+                )
             }
         }
     }
 }
 
 @Composable
-private fun MenuRow(title: String, onClick: () -> Unit) {
+private fun MenuRow(
+    title: String,
+    onClick: () -> Unit
+) {
     Text(
-        title,
+        text = title,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -112,26 +206,51 @@ private fun MenuRow(title: String, onClick: () -> Unit) {
     )
 }
 
-private fun audienceLabel(key: String) = when (key) {
-    "student" -> "حالت دانشجو"
-    "teen" -> "حالت نوجوان"
-    "family" -> "حالت خانواده"
-    else -> "حالت عمومی"
+private fun audienceLabel(key: String): String {
+    return when (key) {
+        "student" -> "حالت دانشجو"
+        "teen" -> "حالت نوجوان"
+        "family" -> "حالت خانواده"
+        else -> "حالت عمومی"
+    }
 }
 
-private fun levelFromPoints(p: Int) = when {
-    p >= 500 -> "پیشرفته"
-    p >= 150 -> "متوسط"
-    else -> "آغازگر"
+private fun levelFromPoints(points: Int): String {
+    return when {
+        points >= 500 -> "پیشرفته"
+        points >= 150 -> "متوسط"
+        else -> "آغازگر"
+    }
 }
 
-private fun buildBadges(s: UserSettings): List<String> {
-    val list = mutableListOf("آغازگر تدبر")
-    if (s.streakDays >= 7) list += "هفت روز استمرار"
-    if (s.streakDays >= 30) list += "سی روز استمرار"
-    if (s.totalPoints >= 50) list += "همراه قرآن"
-    if (s.totalPoints >= 100) list += "کاربر فعال"
-    if (s.audienceType == "student") list += "دانشجوی مسئول"
-    if (s.audienceType == "family") list += "یاور خانواده"
-    return list
+private fun buildBadges(settings: UserSettings): List<String> {
+    val badges = mutableListOf(
+        "آغازگر تدبر"
+    )
+
+    if (settings.streakDays >= 7) {
+        badges += "هفت روز استمرار"
+    }
+
+    if (settings.streakDays >= 30) {
+        badges += "سی روز استمرار"
+    }
+
+    if (settings.totalPoints >= 50) {
+        badges += "همراه قرآن"
+    }
+
+    if (settings.totalPoints >= 100) {
+        badges += "کاربر فعال"
+    }
+
+    if (settings.audienceType == "student") {
+        badges += "دانشجوی مسئول"
+    }
+
+    if (settings.audienceType == "family") {
+        badges += "یاور خانواده"
+    }
+
+    return badges
 }
