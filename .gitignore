@@ -1,0 +1,22 @@
+# Build outputs
+Source/AyehTaAmal/.gradle/
+Source/AyehTaAmal/build/
+Source/AyehTaAmal/app/build/
+Source/AyehTaAmal/local.properties
+Source/AyehTaAmal/local-maven-repo/
+Source/AyehTaAmal/.idea/
+Source/AyehTaAmal/*.iml
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Keep APK folder but ignore local builds (CI uploads artifacts)
+APK/*.apk
+
+# Secrets
+*.keystore
+*.jks
+.env
