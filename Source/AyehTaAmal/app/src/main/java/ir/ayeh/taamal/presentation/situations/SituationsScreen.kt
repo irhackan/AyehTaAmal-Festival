@@ -31,9 +31,16 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
-class SituationsViewModel @Inject constructor(repo: ContentRepository) : ViewModel() {
+class SituationsViewModel @Inject constructor(
+    repo: ContentRepository
+) : ViewModel() {
+
     val situations = repo.observeSituations()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 }
 
 @Composable
@@ -41,16 +48,33 @@ fun SituationsScreen(
     onOpenSituation: (Long) -> Unit,
     viewModel: SituationsViewModel = hiltViewModel()
 ) {
-    val list by viewModel.situations.collectAsStateWithLifecycle()
+    val situations by viewModel.situations.collectAsStateWithLifecycle()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        item { SectionTitle("از موقعیت زندگی تا آیه", "مسئله‌ات را انتخاب کن") }
-        items(list, key = { it.id }) { item ->
-            SoftCard(modifier = Modifier.clickable { onOpenSituation(item.id) }) {
-                Text(item.title, style = MaterialTheme.typography.titleLarge)
+        item {
+            SectionTitle(
+                title = "از موقعیت زندگی تا آیه",
+                subtitle = "مسئله‌ات را انتخاب کن"
+            )
+        }
+
+        items(
+            items = situations,
+            key = { it.id }
+        ) { situation ->
+            SoftCard(
+                modifier = Modifier.clickable {
+                    onOpenSituation(situation.id)
+                }
+            ) {
+                Text(
+                    text = situation.title,
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         }
     }
@@ -61,20 +85,62 @@ fun SituationDetailScreen(
     situation: LifeSituation?,
     onOpenAyah: (Long) -> Unit
 ) {
-    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionTitle(situation?.title ?: "موقعیت")
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SectionTitle(
+            title = situation?.title ?: "موقعیت"
+        )
+
         SoftCard {
-            Text("توضیح", style = MaterialTheme.typography.titleMedium)
-            Text(situation?.shortExplain.orEmpty())
-            Spacer(Modifier.height(10.dp))
-            Text("اقدام فوری", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-            Text(situation?.immediateAction.orEmpty())
-            Spacer(Modifier.height(10.dp))
-            Text("تمرین روزانه", style = MaterialTheme.typography.titleMedium)
-            Text(situation?.dailyPractice.orEmpty())
-            Spacer(Modifier.height(12.dp))
+            Text(
+                text = "توضیح",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = situation?.shortExplain.orEmpty()
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "اقدام فوری",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = situation?.immediateAction.orEmpty()
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "تمرین روزانه",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = situation?.dailyPractice.orEmpty()
+            )
+
+            Spacer(
+                modifier = Modifier.height(12.dp)
+            )
+
             if (situation != null) {
-                PrimaryActionButton("مشاهده آیه مرتبط") { onOpenAyah(situation.ayahId) }
+                PrimaryActionButton(
+                    text = "مشاهده آیه مرتبط",
+                    onClick = {
+                        onOpenAyah(situation.ayahId)
+                    }
+                )
             }
         }
     }
