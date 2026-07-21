@@ -9,14 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -40,17 +38,30 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class QuranViewModel @Inject constructor(repo: ContentRepository) : ViewModel() {
-    val surahs = repo.observeSurahs().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+class QuranViewModel @Inject constructor(
+    repo: ContentRepository
+) : ViewModel() {
+
+    val surahs = repo.observeSurahs()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 }
 
 @HiltViewModel
-class SurahViewModel @Inject constructor(private val repo: ContentRepository) : ViewModel() {
+class SurahViewModel @Inject constructor(
+    private val repo: ContentRepository
+) : ViewModel() {
+
     var ayahs by mutableStateOf<List<Ayah>>(emptyList())
         private set
 
     fun load(surah: Int) {
-        viewModelScope.launch { ayahs = repo.getAyahsBySurah(surah) }
+        viewModelScope.launch {
+            ayahs = repo.getAyahsBySurah(surah)
+        }
     }
 }
 
@@ -60,22 +71,54 @@ fun QuranScreen(
     viewModel: QuranViewModel = hiltViewModel()
 ) {
     val surahs by viewModel.surahs.collectAsStateWithLifecycle()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item { SectionTitle("قرآن کریم", "فهرست سوره‌ها") }
-        items(surahs, key = { it.number }) { s ->
-            SoftCard(modifier = Modifier.clickable { onOpenSurah(s.number) }) {
-                Row(Modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        item {
+            SectionTitle(
+                title = "قرآن کریم",
+                subtitle = "فهرست سوره‌ها"
+            )
+        }
+
+        items(
+            items = surahs,
+            key = { it.number }
+        ) { surah ->
+            SoftCard(
+                modifier = Modifier.clickable {
+                    onOpenSurah(surah.number)
+                }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Column {
-                        Text("${s.number}. ${s.nameFa}", style = MaterialTheme.typography.titleLarge)
-                        Text(s.nameAr, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = "${surah.number}. ${surah.nameFa}",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+
+                        Text(
+                            text = surah.nameAr,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+
                     Column {
-                        Text("${s.ayahCount} آیه", fontWeight = FontWeight.Medium)
-                        Text("${s.revelationType} · جزء ${s.juzStart}", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            text = "${surah.ayahCount} آیه",
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Text(
+                            text = "${surah.revelationType} · جزء ${surah.juzStart}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
             }
@@ -89,12 +132,16 @@ fun SurahScreen(
     onOpenAyah: (Long) -> Unit,
     viewModel: SurahViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(surahNumber) { viewModel.load(surahNumber) }
+    LaunchedEffect(surahNumber) {
+        viewModel.load(surahNumber)
+    }
+
     val ayahs = viewModel.ayahs
 
     if (ayahs.isEmpty()) {
         EmptyState(
-            "در این نسخه، آیات منتخب این سوره هنوز بارگذاری نشده‌اند. از خانه یا جست‌وجو آیات دارای محتوای تدبری را ببینید."
+            message = "در این نسخه، آیات منتخب این سوره هنوز بارگذاری نشده‌اند. " +
+                "از خانه یا جست‌وجو آیات دارای محتوای تدبری را ببینید."
         )
     } else {
         LazyColumn(
@@ -102,14 +149,42 @@ fun SurahScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item { SectionTitle("سوره شماره $surahNumber") }
-            items(ayahs, key = { it.id }) { ayah ->
-                SoftCard(modifier = Modifier.clickable { onOpenAyah(ayah.id) }) {
-                    Text("آیه ${ayah.ayahNumber}", color = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.height(6.dp))
-                    ArabicAyahText(ayah.arabicText)
-                    Spacer(Modifier.height(4.dp))
-                    Text(ayah.topic, style = MaterialTheme.typography.bodySmall)
+            item {
+                SectionTitle(
+                    title = "سوره شماره $surahNumber"
+                )
+            }
+
+            items(
+                items = ayahs,
+                key = { it.id }
+            ) { ayah ->
+                SoftCard(
+                    modifier = Modifier.clickable {
+                        onOpenAyah(ayah.id)
+                    }
+                ) {
+                    Text(
+                        text = "آیه ${ayah.ayahNumber}",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(6.dp)
+                    )
+
+                    ArabicAyahText(
+                        text = ayah.arabicText
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(4.dp)
+                    )
+
+                    Text(
+                        text = ayah.topic,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }
